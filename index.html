@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Election Process Assistant — Your Interactive Voting Guide</title>
+  <meta name="description" content="An interactive assistant that helps you understand the election process, timelines, voter registration, and every step from campaign season to inauguration." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <span class="icon">🗳️</span>
+      <span>Election Assistant</span>
+    </div>
+    <button class="country-switcher" id="country-switcher" onclick="showCountrySelector()" aria-label="Change country">
+      <span id="current-flag">🌍</span>
+      <span id="current-country-name">Select Country</span>
+      <span class="switcher-chevron">▾</span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <a href="#timeline">Timeline</a>
+      <a href="#steps">Steps</a>
+      <a href="#faq">FAQ</a>
+      <a href="#checklist">Checklist</a>
+      <a href="#resources">Resources</a>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-orb"></div>
+    <div class="hero-bg-orb"></div>
+    <div class="hero-bg-orb"></div>
+
+    <div class="hero-badge">✨ Interactive Guide</div>
+    <h1>Understand the<br/><span class="gradient-text">Election Process</span></h1>
+    <p id="hero-subtitle">Your step-by-step guide to elections — from voter registration to inauguration. Easy to follow, beautifully presented.</p>
+
+    <div class="hero-actions">
+      <a href="#steps" class="btn btn-primary">Explore the Steps →</a>
+      <a href="#checklist" class="btn btn-outline">Voting Checklist</a>
+    </div>
+
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <span class="arrow">↓</span>
+    </div>
+  </section>
+
+  <!-- ===== TIMELINE ===== -->
+  <section class="section" id="timeline">
+    <div class="section-header">
+      <div class="section-label">Timeline</div>
+      <h2 class="section-title">Election Timeline at a Glance</h2>
+      <p class="section-subtitle">From pre-election announcements to post-election certification — here's the full journey.</p>
+    </div>
+    <div class="timeline" id="timeline-list">
+      <!-- rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ===== STEPS ===== -->
+  <section class="section" id="steps">
+    <div class="section-header">
+      <div class="section-label">Step by Step</div>
+      <h2 class="section-title">The Election Process</h2>
+      <p class="section-subtitle">Click any card to dive deeper into each step of the process.</p>
+    </div>
+    <div class="steps-grid" id="steps-grid">
+      <!-- rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="section" id="faq">
+    <div class="section-header">
+      <div class="section-label">FAQ</div>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-subtitle">Quick answers to the most common voting questions.</p>
+    </div>
+    <div class="faq-list" id="faq-list">
+      <!-- rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ===== CHECKLIST ===== -->
+  <section class="section" id="checklist">
+    <div class="section-header">
+      <div class="section-label">Checklist</div>
+      <h2 class="section-title">Your Voting Checklist</h2>
+      <p class="section-subtitle">Track your preparation — progress is saved automatically.</p>
+    </div>
+    <div class="checklist-container">
+      <div class="checklist-progress">
+        <div class="progress-info">
+          <span id="progress-text">0 of 7 completed</span>
+          <span>📋</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+      <div id="checklist-items">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESOURCES ===== -->
+  <section class="section" id="resources">
+    <div class="section-header">
+      <div class="section-label">Resources</div>
+      <h2 class="section-title">Useful Resources</h2>
+      <p class="section-subtitle">Trusted sources for deeper information on elections and voting.</p>
+    </div>
+    <div class="resources-grid" id="resources-grid">
+      <!-- rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="note">
+      📌 Election rules and timelines vary significantly by country, state, and locality. This guide provides a general framework — always consult your <strong>local election authority</strong> for jurisdiction-specific information.
+    </div>
+    <p>Election Process Assistant · Last updated April 2026</p>
+  </footer>
+
+  <!-- ===== COUNTRY SELECTOR OVERLAY ===== -->
+  <div class="country-overlay" id="country-overlay">
+    <div class="country-selector">
+      <div class="country-selector-header">
+        <div class="country-selector-badge">🌍 Choose Your Country</div>
+        <h2>Where do you vote?</h2>
+        <p>Select your country to get personalized election information, timelines, and resources.</p>
+      </div>
+      <div class="country-grid" id="country-grid">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL ===== -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title"></h2>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="countries-data.js"></script>
+  <script src="knowledge-data.js"></script>
+  <script src="current-facts.js"></script>
+  <script src="app.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>
