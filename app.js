@@ -28,7 +28,13 @@ function selectCountry(code) {
   localStorage.setItem('election-country', code);
   // Clear old checklist when switching countries
   localStorage.removeItem('election-checklist');
+  // Reset language to English or restore saved language for this country
+  const savedLang = localStorage.getItem('election-lang') || 'en';
+  const available = getAvailableLanguages();
+  currentLang = available.some(l => l.code === savedLang) ? savedLang : 'en';
   updateNavCountry();
+  updateLangSelector();
+  applyUITranslations();
   renderAllSections();
   hideCountrySelector();
 }
@@ -41,7 +47,19 @@ function updateNavCountry() {
 
 // ===== RENDER =====
 function getCountryData() {
-  return COUNTRIES[selectedCountry];
+  const base = COUNTRIES[selectedCountry];
+  if (currentLang === 'en' || !LANG_CONTENT[selectedCountry] || !LANG_CONTENT[selectedCountry][currentLang]) {
+    return base;
+  }
+  const overlay = LANG_CONTENT[selectedCountry][currentLang];
+  return {
+    ...base,
+    timeline: overlay.timeline || base.timeline,
+    steps: overlay.steps || base.steps,
+    faq: overlay.faq || base.faq,
+    checklist: overlay.checklist || base.checklist,
+    resources: overlay.resources || base.resources,
+  };
 }
 
 function renderTimeline() {
@@ -115,8 +133,9 @@ function renderResources() {
 
 function updateHeroSubtitle() {
   const c = getCountryData();
+  const base = COUNTRIES[selectedCountry];
   document.getElementById('hero-subtitle').innerHTML =
-    `Your step-by-step guide to elections in <strong>${c.flag} ${c.name}</strong> — from voter registration to results. Tailored to your country's system.`;
+    `${t('hero_subtitle')} <strong>${base.flag} ${base.name}</strong> ${t('hero_subtitle_2')}`;
 }
 
 function renderAllSections() {
@@ -166,7 +185,7 @@ function updateProgress() {
   const fill = document.getElementById('progress-fill');
   const text = document.getElementById('progress-text');
   if (fill) fill.style.width = pct + '%';
-  if (text) text.textContent = `${saved.length} of ${data.length} completed`;
+  if (text) text.textContent = `${saved.length} / ${data.length} ${t('checklist_progress')}`;
 }
 
 // ===== SCROLL ANIMATIONS =====
@@ -230,7 +249,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const saved = localStorage.getItem('election-country');
   if (saved && COUNTRIES[saved]) {
     selectedCountry = saved;
+    // Restore saved language
+    const savedLang = localStorage.getItem('election-lang') || 'en';
+    const available = getAvailableLanguages();
+    currentLang = available.some(l => l.code === savedLang) ? savedLang : 'en';
     updateNavCountry();
+    updateLangSelector();
+    applyUITranslations();
     renderAllSections();
   } else {
     // Show country selector on first visit

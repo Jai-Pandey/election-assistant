@@ -23,6 +23,10 @@
       <span id="current-country-name">Select Country</span>
       <span class="switcher-chevron">▾</span>
     </button>
+    <div class="lang-selector" id="lang-selector" style="display:none">
+      <label for="lang-select">🌐</label>
+      <select id="lang-select" onchange="setLanguage(this.value)" aria-label="Select language"></select>
+    </div>
     <div class="nav-links" id="nav-links">
       <a href="#timeline">Timeline</a>
       <a href="#steps">Steps</a>
@@ -161,6 +165,8 @@
   <script src="countries-data.js"></script>
   <script src="knowledge-data.js"></script>
   <script src="current-facts.js"></script>
+  <script src="lang-content.js"></script>
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
   <script src="chat.js"></script>
 </body>
