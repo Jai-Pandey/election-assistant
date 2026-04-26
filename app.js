@@ -257,8 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLangSelector();
     applyUITranslations();
     renderAllSections();
-  } else {
-    // Show country selector on first visit
-    showCountrySelector();
   }
+  
+  // Always show country selector on visit
+  showCountrySelector();
 });
