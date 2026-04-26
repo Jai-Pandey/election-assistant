@@ -152,7 +152,7 @@ function renderAllSections() {
 // ===== INTERACTIONS =====
 function openModal(stepIndex) {
   const s = getCountryData().steps[stepIndex];
-  document.getElementById('modal-title').innerHTML = `${s.icon} Step ${s.num}: ${s.title}`;
+  document.getElementById('modal-title').innerHTML = `${s.icon} ${t('modal_step')} ${s.num}: ${s.title}`;
   document.getElementById('modal-body').innerHTML = s.details;
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
