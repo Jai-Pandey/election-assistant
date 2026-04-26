@@ -220,6 +220,33 @@ This assistant supports **country-specific election data**. On your first visit,
 
 ---
 
+## 🌐 Multi-Language Support
+
+The Election Assistant is fully localized for diverse populations. When you select a country, you can view the entire guide in its primary and regional languages.
+
+### Supported Languages by Country
+
+| Country | Languages Available |
+|---------|---------------------|
+| 🇺🇸 **United States** | English (`en`), Spanish (`es`) |
+| 🇮🇳 **India** | English (`en`), Hindi (`hi`), Kannada (`kn`), Tamil (`ta`), Telugu (`te`) |
+| 🇬🇧 **United Kingdom** | English (`en`), Welsh (`cy`) |
+| 🇨🇦 **Canada** | English (`en`), French (`fr`) |
+| 🇦🇺 **Australia** | English (`en`) |
+| 🇩🇪 **Germany** | English (`en`), German (`de`) |
+
+### How It Works
+
+1. **Language Selector** — After selecting a country, a globe icon (🌐) appears in the navigation bar.
+2. **Dynamic UI Translation** — Changing the language instantly translates the navigation menu, hero section, section headers, subtitles, and modal text.
+3. **Localized Content** — The core content (`Timeline`, `Steps`, `FAQ`, and `Checklist`) is fully translated and localized per country.
+4. **Persistence** — Your selected language is saved across sessions (for each country).
+
+> [!NOTE]
+> If a specific section lacks a translation in the selected language, the application gracefully falls back to the English content.
+
+---
+
 ## 💬 Live Chat Assistant
 
 The app includes a **live chat assistant** that lets you ask election-related questions and get instant, personalized answers — right from the page. The assistant is powered by a comprehensive knowledge base covering **election processes, constitutional bodies, government structure, electoral systems, and laws** for each supported country.
