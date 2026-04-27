@@ -1,3 +1,41 @@
+// ===== CONFIGURATION =====
+const GEMINI_API_KEY = 'AIzaSyAGt8F9LqzmpWNoSoOVH_crQIuU5czA0Ew'; // <-- Paste your API key here
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+const SYSTEM_PROMPT = `**Role & Persona**
+You are the "Civic Expert," an advanced, neutral, and educational engine for the Election Process Assistant. Your mission is to provide factual information about elections, the Executive, and the Judiciary while adapting seamlessly to the user's localized context.
+
+**1. Context Injection & Persistence**
+* Input Format: Every user query will be prefixed with: "User is in [SelectedCountry]. User asks: [Message]".
+* Mandatory Localization: You MUST prioritize the specified country.
+  - India: Focus on the Election Commission (Article 324), Model Code of Conduct, and Lok Sabha.
+  - USA: Focus on the Electoral College (270 to win) and Federal vs. State rules.
+  - UK/CA/AU: Focus on the Parliamentary/Westminster system and the role of the Monarch/Governor-General.
+  - Germany: Explain the MMP system (Two Votes) and coalition dynamics.
+
+**2. The 3-Tier Intelligence Scale**
+* Tier 1 (Current Facts): Provide the latest info on current leaders and recent election cycles.
+* Tier 2 (Deep Knowledge): Explain complex mechanics like EVM/VVPAT, Judicial Review, and FPTP vs. Proportional representation.
+* Tier 3: If a query is outside your core database, summarize general principles.
+
+**3. Visual Trigger Protocol**
+You are programmed to trigger educational diagrams. You MUST include the following tags when relevant:
+* If the user asks about court structures or hierarchy: [DIAGRAM:COURT_HIERARCHY].
+* If the user asks about the "Three Branches" or power distribution: [DIAGRAM:THREE_BRANCHES].
+* If the user asks about the election steps: [DIAGRAM:ELECTION_STEPS].
+
+**4. The "Civics-as-Code" Analogy Module**
+If the user identifies as a developer or asks for a "technical/simple" explanation, use this framework:
+* Constitution = System Requirements (SRS)
+* Legislature = The Developers
+* Executive = The Runtime Environment
+* Judiciary = The Debugger/Compiler
+
+**5. Guardrails & Formatting**
+* Neutrality: DO NOT express political opinions.
+* Formatting: Use Markdown headers (###), bolding for key terms, and bullet points.
+* Mandatory Disclaimer: Always include: "For legally binding dates, consult your local Election Commission."`;
+
 // ===== CHAT ASSISTANT =====
 const chatState = { isOpen: false, messages: [] };
 
@@ -46,19 +84,16 @@ function localSearch(query) {
   const STOP_WORDS = new Set(['what','which','where','when','who','whom','how','does','is','are','was','were','the','a','an','of','in','to','for','and','or','but','can','do','has','have','had','this','that','with','about','from','tell','me','please','know','explain','describe']);
   const words = q.split(/\s+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
   if (words.length === 0 && q.length > 0) {
-    // If all words were stop words, use the full query for phrase matching
     words.push(...q.split(/\s+/).filter(w => w.length > 2));
   }
   if (words.length === 0) return null;
 
-  // Fuzzy match helper — allows edit distance ≤ 2 using Levenshtein
   function fuzzyMatch(a, b) {
     if (a === b) return true;
-    if (a.includes(b) || b.includes(a)) return true;
-    // Only fuzzy-match single words of similar length
+    // Only fuzzy-match single words of similar length (typo correction)
     if (a.includes(' ') || b.includes(' ')) return false;
-    if (Math.abs(a.length - b.length) > 2) return false;
-    if (a.length < 4 || b.length < 4) return false; // skip short words
+    if (Math.abs(a.length - b.length) > 1) return false;
+    if (a.length < 4 || b.length < 4) return false; 
     // Levenshtein distance
     const m = a.length, n = b.length;
     const dp = Array.from({length: m + 1}, (_, i) => {
@@ -79,14 +114,12 @@ function localSearch(query) {
 
   const results = [];
 
-  // 0. Current facts (highest priority for "who is" type questions)
   if (typeof CURRENT_FACTS !== 'undefined' && CURRENT_FACTS[selectedCountry]) {
     CURRENT_FACTS[selectedCountry].forEach(entry => {
       let score = 0;
       entry.keywords.forEach(kw => {
         if (q.includes(kw)) score += 8;
         words.forEach(w => { if (fuzzyMatch(kw, w)) score += (kw === w ? 4 : 2); });
-        // Check if keyword phrase is fuzzy-present in query
         const kwWords = kw.split(/\s+/);
         if (kwWords.length > 1 && kwWords.every(kw2 => words.some(w => fuzzyMatch(kw2, w)))) score += 6;
       });
@@ -94,14 +127,12 @@ function localSearch(query) {
     });
   }
 
-  // 1. Knowledge base
   if (typeof KNOWLEDGE !== 'undefined' && KNOWLEDGE[selectedCountry]) {
     KNOWLEDGE[selectedCountry].forEach(entry => {
       let score = 0;
       entry.keywords.forEach(kw => {
         if (q.includes(kw)) score += 5;
         words.forEach(w => { if (fuzzyMatch(kw, w)) score += (kw === w ? 3 : 2); });
-        // Check if keyword phrase is fuzzy-present in query
         const kwWords = kw.split(/\s+/);
         if (kwWords.length > 1 && kwWords.every(kw2 => words.some(w => fuzzyMatch(kw2, w)))) score += 5;
       });
@@ -109,18 +140,15 @@ function localSearch(query) {
     });
   }
 
-  // 2. FAQ
   c.faq.forEach(f => {
     const fqLower = f.q.toLowerCase();
     let score = 0;
     if (q.includes(fqLower.replace(/[?]/g, '').trim())) score += 10;
-    // Only match meaningful words against FAQ questions
     const faqWords = fqLower.split(/\s+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
     words.forEach(w => { if (faqWords.some(fw => fuzzyMatch(fw, w))) score += 2; });
     if (score > 0) results.push({ score, answer: f.a, source: `FAQ: ${f.q}` });
   });
 
-  // 3. Steps
   c.steps.forEach(s => {
     let score = 0;
     const plain = s.details.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -132,14 +160,12 @@ function localSearch(query) {
     if (score > 0) results.push({ score, answer: `**Step ${s.num}: ${s.title}**\n${s.summary}\n\n${plain}`, source: `Step: ${s.title}` });
   });
 
-  // 4. Timeline
   c.timeline.forEach(t => {
     let score = 0;
     words.forEach(w => { if ((t.title + ' ' + t.desc).toLowerCase().includes(w)) score += 2; });
     if (score > 0) results.push({ score, answer: `**${t.title}** (${t.phase})\n${t.desc}`, source: `Timeline: ${t.title}` });
   });
 
-  // 5. Shortcuts
   if (words.some(w => ['checklist','prepare','preparation','ready'].includes(w)))
     results.push({ score: 4, answer: `Voting checklist for ${c.name}:\n\n${c.checklist.map((item,i) => `${i+1}. ${item}`).join('\n')}`, source: 'Checklist' });
   if (words.some(w => ['resources','links','websites','official','website'].includes(w)))
@@ -148,7 +174,7 @@ function localSearch(query) {
     results.push({ score: 4, answer: `Election timeline for ${c.name}:\n\n${c.timeline.map(t => `• **${t.title}** (${t.phase}) — ${t.desc}`).join('\n')}`, source: 'Timeline' });
 
   results.sort((a, b) => b.score - a.score);
-  if (results.length > 0 && results[0].score >= 2) {
+  if (results.length > 0 && results[0].score >= 8) {
     let response = results[0].answer;
     if (results.length > 1 && results[1].score >= results[0].score * 0.5 && results[1].source !== results[0].source)
       response += `\n\n---\n📌 Related: **${results[1].source}**`;
@@ -157,40 +183,55 @@ function localSearch(query) {
   return null;
 }
 
-// ===== WIKIPEDIA API FALLBACK =====
-async function searchWikipedia(query) {
-  const c = COUNTRIES[selectedCountry];
-  const searchQuery = `${query} ${c.name} election`;
+// ===== GEMINI API FALLBACK (Replaces Wikipedia) =====
+async function searchGemini(query) {
+  // 🚨 SAFETY CHECK DELETED! We are bypassing the bouncer.
+
+  // Inject Country Context safely
+  const countryName = (typeof COUNTRIES !== 'undefined' && selectedCountry) ? COUNTRIES[selectedCountry].name : "Unknown";
+  const dynamicPrompt = `User is in [${countryName}]. User asks: ${query}`;
+
+  const payload = {
+    systemInstruction: { 
+      parts: [{ text: SYSTEM_PROMPT }] 
+    },
+    contents: [
+      { parts: [{ text: dynamicPrompt }] }
+    ],
+    generationConfig: { temperature: 0.3 }
+  };
+
   try {
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchQuery)}&srlimit=3&format=json&origin=*`;
-    const res = await fetch(searchUrl);
+    const res = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
     const data = await res.json();
-    if (!data.query || !data.query.search || data.query.search.length === 0) return null;
 
-    // Get summary of best result
-    const title = data.query.search[0].title;
-    const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-    const summaryRes = await fetch(summaryUrl);
-    const summaryData = await summaryRes.json();
-
-    if (summaryData.extract) {
-      // Trim to reasonable length
-      let extract = summaryData.extract;
-      if (extract.length > 600) extract = extract.substring(0, 600).replace(/\s\S*$/, '') + '...';
-      return `${extract}\n\n---\n🌐 Source: **Wikipedia** — [${title}](${summaryData.content_urls?.desktop?.page || '#'})`;
+    if (data.error) {
+      console.error("Gemini API Error details:", data.error);
+      return "There was an error connecting to the AI. Check the console."; 
     }
+
+    if (data.candidates && data.candidates[0].content) {
+      let text = data.candidates[0].content.parts[0].text;
+      return text + `\n\n---\n✨ Answered by **Civic AI**`;
+    }
+    
     return null;
   } catch (e) {
-    console.error('Wikipedia API error:', e);
+    console.error('Gemini Fetch error:', e);
     return null;
   }
 }
 
-// ===== PROCESS QUERY (local → Wikipedia) =====
+// ===== PROCESS QUERY (local → Gemini) =====
 async function processQuery(query) {
   const q = query.toLowerCase().trim();
+  const container = document.getElementById('chat-messages');
 
-  // Hello/help check
   if (['hello','hi','hey','help','start'].some(w => q.includes(w)) && q.split(/\s+/).length <= 3) {
     addBotMessage(greetingMessage(), true);
     return;
@@ -200,21 +241,53 @@ async function processQuery(query) {
   const localResult = localSearch(query);
   if (localResult) {
     addBotMessage(localResult);
+    renderChips(getQuickChips(), container);
     return;
   }
 
-  // 2. Show searching indicator, then try Wikipedia
-  addBotMessage('🔍 Searching for an answer...', false, true);
+  // 1.5 Special Civic Expert Triggers
+  // Developer Analogy
+  if (['developer','code','technical','srs','programming','engine'].some(w => q.includes(w))) {
+    addBotMessage(`### 💻 Civics-as-Code\nThink of the government as a distributed system:\n\n• **Constitution** = System Requirements (SRS)\n• **Legislature** = The Developers (Write the source code)\n• **Executive** = The Runtime (Executes the code)\n• **Judiciary** = The Debugger (Scans for syntax errors)`);
+    renderChips(getQuickChips(), container);
+    return;
+  }
+  // Visual Triggers
+  if (['branches','power','distribution','government structure'].some(w => q.includes(w))) {
+    addBotMessage(`Power is distributed across three branches to ensure checks and balances.\n\n[DIAGRAM:THREE_BRANCHES]`);
+    renderChips(getQuickChips(), container);
+    return;
+  }
+  if (['court','judge','judiciary','hierarchy'].some(w => q.includes(w))) {
+    addBotMessage(`The court system is structured hierarchically to handle appeals and local cases.\n\n[DIAGRAM:COURT_HIERARCHY]`);
+    renderChips(getQuickChips(), container);
+    return;
+  }
+  if (['process','steps','how to vote','journey'].some(w => q.includes(w))) {
+    addBotMessage(`The election process follows a standard sequence of phases.\n\n[DIAGRAM:ELECTION_STEPS]`);
+    renderChips(getQuickChips(), container);
+    return;
+  }
+  // Non-Civic Pivot
+  if (['java','python','javascript','css','html'].some(w => q.includes(w)) && !['election','voter','government'].some(w => q.includes(w))) {
+    addBotMessage(`I specialize in civic education and elections! While I can't help with software development, I can explain how technology like voting machines or registration databases work in the context of elections.`);
+    renderChips(getQuickChips(), container);
+    return;
+  }
 
-  const wikiResult = await searchWikipedia(query);
+  // 2. Show searching indicator, then hit Gemini API
+  addBotMessage('🧠 Asking the Civic AI...', false, true);
+
+  const geminiResult = await searchGemini(query);
+  
   // Remove the searching message
-  const container = document.getElementById('chat-messages');
   const lastMsg = container.querySelector('.chat-msg.bot:last-of-type');
   if (lastMsg) lastMsg.remove();
   chatState.messages.pop();
 
-  if (wikiResult) {
-    addBotMessage(wikiResult);
+  if (geminiResult) {
+    addBotMessage(geminiResult);
+    renderChips(getQuickChips(), container);
   } else {
     const c = COUNTRIES[selectedCountry];
     addBotMessage(`I couldn't find a specific answer for "${query}".\n\nTry clicking a topic below or ask about registration, voting, parties, constitution, current leaders, or government structure!`, false);
@@ -291,12 +364,45 @@ function handleChatSend() {
 
 function formatMessage(text) {
   let html = escapeHTML(text);
+  
+  // 1. Map specific diagrams to REAL image URLs
+  const diagrams = {
+    'COURT_HIERARCHY': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Structure_of_Courts_in_India.png/500px-Structure_of_Courts_in_India.png',
+    'THREE_BRANCHES': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Checks_and_balances_en.svg/500px-Checks_and_balances_en.svg.png',
+    'ELECTION_STEPS': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Voting_box_icon.svg/200px-Voting_box_icon.svg.png' // Replace with your actual flowchart image
+  };
+
+  // Replace [DIAGRAM:X] with an actual HTML <img> tag
+  html = html.replace(/\[DIAGRAM:(.+?)\]/g, (match, diagramKey) => {
+    // Check if we have a URL for this diagram
+    const imageUrl = diagrams[diagramKey];
+    
+    if (imageUrl) {
+      // Return a styled image tag
+      return `<div style="margin: 15px 0; text-align: center;">
+                <img src="${imageUrl}" alt="${diagramKey}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              </div>`;
+    } else {
+      // Fallback: If no URL is found, show the grey placeholder box
+      return `<div style="background:rgba(0,0,0,0.05); border:1px dashed #aaa; padding:15px; margin:10px 0; border-radius:8px; text-align:center; color:#555; font-size:0.9em;">
+                🖼️ <strong>Visual Diagram Needed:</strong><br>${diagramKey}
+              </div>`;
+    }
+  });
+
+  // 2. Bold formatting
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  
+  // 3. Horizontal rules
   html = html.replace(/\n---\n/g, '<hr style="border:none;border-top:1px solid rgba(99,140,255,0.15);margin:0.75rem 0">');
-  // Convert markdown-style links [text](url) to clickable links
+  
+  // 4. Clickable Links
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--clr-primary)">$1</a>');
+  
+  // 5. Line breaks and Bullets
   html = html.replace(/\n/g, '<br>');
   html = html.replace(/• /g, '&bull; ');
+  
   return html;
 }
 
