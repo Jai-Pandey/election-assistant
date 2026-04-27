@@ -292,7 +292,7 @@ The assistant draws from a deep knowledge base for each country. Here's what it 
 
 - 🔍 **Deep Knowledge Search** — Searches a comprehensive knowledge base of constitutional and electoral data, not just surface-level info
 - 👤 **Current Political Facts** — Knows current leaders, recent election results, opposition, and upcoming elections for all countries
-- 🌐 **Wikipedia API Fallback** — If a question isn't answered locally, the assistant searches Wikipedia and returns a relevant summary with source link
+- ✨ **Civic AI Fallback** — If a question isn't answered locally, the assistant uses the Gemini AI ("Civic AI") to provide a detailed, context-aware answer tailored to your country.
 - 🧠 **Smart Relevance Scoring** — Prioritizes exact phrase matches, keyword matches, and full-text search for the best answer
 - 🖱️ **Clickable Quick-Action Chips** — Topic buttons appear below the welcome message so users can tap instead of typing
 - 💬 **Typing Indicator** — Animated dots simulate a real chat experience
@@ -321,7 +321,7 @@ User Question
          │ not found
          ▼
 ┌─────────────────────┐
-│ 3. Wikipedia API    │ ← Live search for anything else
+│ 3. Civic AI (Gemini)│ ← Context-aware answers for anything else
 │    (network call)   │
 └─────────────────────┘
 ```
@@ -359,7 +359,7 @@ When you open the chat, clickable **topic chips** appear. Just tap any chip to i
 | 🇩🇪 Germany | `👤 Current Chancellor` · `🗳️ Two Votes` |
 
 > [!TIP]
-> Click any chip to get an instant answer. For questions not in the local database, the assistant automatically searches Wikipedia and returns a summary with a source link.
+> Click any chip to get an instant answer. For questions not in the local database, the assistant automatically consults the Civic AI (Gemini) to provide a detailed, localized response.
 
 ---
 
