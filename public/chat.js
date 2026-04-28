@@ -1,6 +1,4 @@
 // ===== CONFIGURATION =====
-const GEMINI_API_KEY = 'AIzaSyAGt8F9LqzmpWNoSoOVH_crQIuU5czA0Ew'; // <-- Paste your API key here
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_PROMPT = `**Role & Persona**
 You are the "Civic Expert," an advanced, neutral, and educational engine for the Election Process Assistant. Your mission is to provide factual information about elections, the Executive, and the Judiciary while adapting seamlessly to the user's localized context.
@@ -202,7 +200,7 @@ async function searchGemini(query) {
   };
 
   try {
-    const res = await fetch(GEMINI_URL, {
+    const res = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
