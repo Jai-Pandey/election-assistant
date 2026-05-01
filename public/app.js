@@ -213,8 +213,14 @@ function initNav() {
     navbar.classList.toggle('scrolled', window.scrollY > 50);
   });
 
-  toggle.addEventListener('click', () => links.classList.toggle('open'));
-  links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => links.classList.remove('open')));
+  toggle.addEventListener('click', () => {
+    links.classList.toggle('open');
+    document.body.classList.toggle('nav-open');
+  });
+  links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    links.classList.remove('open');
+    document.body.classList.remove('nav-open');
+  }));
 
   // Active link highlight
   const sections = document.querySelectorAll('.section[id]');
