@@ -47,9 +47,10 @@ body::before {
   pointer-events: none;
   z-index: 0;
 }
-a { color: var(--clr-primary); text-decoration: none; transition: color var(--transition); }
-a:hover { color: var(--clr-accent); }
-img { max-width: 100%; display: block; }
+a { color: var(--clr-primary); text-decoration: none; transition: color var(--transition); -webkit-tap-highlight-color: transparent; }
+a:active { opacity: 0.7; }
+.btn:active { transform: scale(0.96); }
+.country-card:active, .step-card:active { transform: scale(0.98); }
 ul, ol { list-style: none; }
 
 /* ===== SCROLLBAR ===== */
@@ -719,31 +720,87 @@ ul, ol { list-style: none; }
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .nav-links { 
-    display: none; position: fixed; top: 64px; left: 0; right: 0;
-    background: rgba(11,15,26,0.95); backdrop-filter: blur(18px);
-    flex-direction: column; padding: 1rem;
-    border-bottom: 1px solid var(--clr-border);
-  }
-  .nav-links.open { display: flex; }
-  .nav-toggle { display: block; }
-  .hero { padding: 5rem 1.5rem 3rem; }
-  .hero-actions { flex-direction: column; width: 100%; }
-  .hero-actions .btn { justify-content: center; }
-  .section { padding: 3rem 1.25rem; }
-  .steps-grid { grid-template-columns: 1fr; }
-  .resources-grid { grid-template-columns: 1fr; }
-  .timeline { padding-left: 30px; }
+@media (max-width: 1024px) {
+  .section { padding: 4rem 2rem; }
   .country-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .navbar { padding: 0 1.25rem; height: 60px; }
+  
+  .nav-links { 
+    position: fixed; top: 0; right: 0; bottom: 0; width: 280px;
+    background: var(--clr-surface);
+    backdrop-filter: blur(24px);
+    flex-direction: column; padding: 5rem 1.5rem 2rem;
+    border-left: 1px solid var(--clr-border);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 90;
+    display: flex; gap: 10px;
+  }
+  .nav-links.open { transform: translateX(0); box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
+  .nav-links a { opacity: 0; transform: translateX(10px); transition: all 0.4s ease; }
+  .nav-links.open a { opacity: 1; transform: translateX(0); }
+  .nav-links.open a:nth-child(1) { transition-delay: 0.1s; }
+  .nav-links.open a:nth-child(2) { transition-delay: 0.15s; }
+  .nav-links.open a:nth-child(3) { transition-delay: 0.2s; }
+  .nav-links.open a:nth-child(4) { transition-delay: 0.25s; }
+  .nav-links.open a:nth-child(5) { transition-delay: 0.3s; }
+  
+  .nav-toggle { 
+    display: block; position: relative; z-index: 100; 
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(99,140,255,0.08);
+  }
+
+  .hero { padding: 7rem 1.25rem 4rem; min-height: auto; }
+  .hero h1 { font-size: 2.8rem; }
+  .hero p { font-size: 1rem; }
+  .hero-actions { flex-direction: column; width: 100%; max-width: 320px; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
+
+  .section-header { margin-bottom: 2.5rem; }
+  .section-title { font-size: 1.8rem; }
+  
+  .steps-grid, .resources-grid { grid-template-columns: 1fr; gap: 1rem; }
+  
+  .timeline { padding-left: 28px; }
+  .timeline-item { padding: 1.25rem; }
+  .timeline-item:hover { transform: none; }
+
+  .modal-overlay { padding: 1rem; }
+  .modal { padding: 1.75rem 1.5rem; border-radius: var(--radius-md); }
+  
+  .country-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .country-card { padding: 1.25rem 0.75rem; }
+  .country-card .flag { font-size: 2.2rem; }
+  
   .country-switcher #current-country-name { display: none; }
   .country-switcher { padding: 6px 10px; }
+  
   .chat-panel {
-    width: calc(100vw - 16px); right: 8px; bottom: 96px;
-    max-height: 70vh; border-radius: var(--radius-lg);
+    width: calc(100vw - 24px); right: 12px; bottom: 88px;
+    height: 65vh; max-height: none;
+    border-radius: var(--radius-lg);
   }
-  .chat-fab { bottom: 20px; right: 20px; width: 54px; height: 54px; }
+  .chat-fab { bottom: 20px; right: 20px; width: 56px; height: 56px; }
 }
+
 @media (max-width: 480px) {
+  .hero h1 { font-size: 2.4rem; }
   .country-grid { grid-template-columns: 1fr; }
+  .checklist-container { padding: 1.5rem 1.25rem; }
+  .modal-header h2 { font-size: 1.15rem; }
+  .chat-panel { width: 100vw; height: 100vh; right: 0; bottom: 0; border-radius: 0; border: none; }
+  .chat-panel.open { transform: none; }
+  .chat-header { padding: 12px 16px; height: 60px; }
+  .chat-close { width: 36px; height: 36px; }
 }
+
+/* Fix for mobile menu background dimming when open */
+body.nav-open::after {
+  content: ''; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px); z-index: 85; animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
